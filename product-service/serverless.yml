@@ -24,6 +24,9 @@ provider:
   name: aws
   runtime: nodejs18.x
 
+plugins:
+  - serverless-openapi-documentation
+
 # you can overwrite defaults here
 #  stage: dev
 #  region: us-east-1
@@ -65,6 +68,9 @@ functions:
       - http:
           path: /product
           method: get
+          documentation:
+            summary: Retrieves a list of products
+            description: Retrieves a list of products from the Product Service.
 
   getProductsById:
     handler: handler.getProductsById
@@ -72,6 +78,23 @@ functions:
       - http:
           path: /products/{productId}
           method: get
+          documentation:
+            summary: Retrieves a product by ID
+            description: Retrieves a product from the Product Service based on the provided product ID.
+            requestModels:
+              'application/json': ProductByIdRequestModel
+            requestParameters:
+              paths:
+                productId: true
+            responses:
+              200:
+                description: Successful response
+                headers:
+                  Content-Type:
+                    schema:
+                      type: string
+              404:
+                description: Product not found
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
