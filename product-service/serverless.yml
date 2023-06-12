@@ -66,14 +66,14 @@ functions:
     handler: handler.getProductsList
     events:
       - http:
-          path: /product
+          path: /products
           method: get
           documentation:
             summary: Retrieves a list of products
             description: Retrieves a list of products from the Product Service.
 
   getProductsById:
-    handler: handler.getProductsById
+    handler: handler.getProductById
     events:
       - http:
           path: /products/{productId}
@@ -95,6 +95,13 @@ functions:
                       type: string
               404:
                 description: Product not found
+
+  createProduct:
+    handler: handler.createProduct
+    events:
+      - http:
+          path: /products
+          method: post
 
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
@@ -137,8 +144,8 @@ functions:
 #      variable2: value2
 
 # you can add CloudFormation resource templates here
-#resources:
-#  Resources:
+
+
 #    NewResource:
 #      Type: AWS::S3::Bucket
 #      Properties:
