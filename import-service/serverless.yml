@@ -66,6 +66,12 @@ functions:
           path: import
           method: get
           cors: true
+    iamRoleStatements:
+      - Effect: Allow
+        Action:
+          - s3:GetSignedUrl
+          - s3:PutObject
+        Resource: "arn:aws:s3:::uploaded-rsschool/*"
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
