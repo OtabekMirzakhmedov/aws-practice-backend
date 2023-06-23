@@ -1,9 +1,17 @@
 const AWS = require('aws-sdk');
+const csv = require('csv-parser');
 
 const s3 = new AWS.S3();
 
 module.exports.importProductsFile = async (event) => {
   const { name } = event.queryStringParameters;
+
+  if (!name) {
+    return {
+      statusCode: 400,
+      body: 'Missing query parameter: name',
+    };
+  }
 
   try {
     // Generate a pre-signed URL for the S3 bucket with the provided key
@@ -31,5 +39,32 @@ module.exports.importProductsFile = async (event) => {
       },
       body: JSON.stringify({ error: 'Failed to generate signed URL.' }),
     };
+  }
+};
+
+module.exports.importFileParser = async (event) => {
+  // Iterate through each record in the event
+  for (const record of event.Records) {
+    // Retrieve the bucket and key information
+    const bucketName = record.s3.bucket.name;
+    const key = record.s3.object.key;
+
+    // Skip the event if it's not from the 'uploaded' folder
+    if (!key.startsWith('uploaded/')) {
+      continue;
+    }
+
+    // Create a readable stream to read the file from S3
+    const s3Stream = s3.getObject({ Bucket: bucketName, Key: key }).createReadStream();
+
+    // Parse the CSV file using csv-parser
+    s3Stream.pipe(csv())
+      .on('data', (data) => {
+        // Log each record to CloudWatch
+        console.log('Record:', data);
+      })
+      .on('end', () => {
+        console.log('CSV parsing finished.');
+      });
   }
 };

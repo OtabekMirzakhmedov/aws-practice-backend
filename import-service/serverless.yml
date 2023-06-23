@@ -66,6 +66,18 @@ functions:
           path: import
           method: get
           cors: true
+
+  importFileParser:
+    handler: handler.importFileParser
+    events:
+      - s3:
+          bucket: uploaded-rsschool
+          event: s3:ObjectCreated:*
+          rules:
+            - prefix: uploaded/
+
+resources:
+  Resources: {}
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
