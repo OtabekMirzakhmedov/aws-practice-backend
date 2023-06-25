@@ -2,6 +2,7 @@ const AWS = require('aws-sdk');
 const csv = require('csv-parser');
 
 const s3 = new AWS.S3();
+const SQS = new AWS.SQS();
 
 module.exports.importProductsFile = async (event) => {
   const { name } = event.queryStringParameters;
@@ -62,9 +63,17 @@ module.exports.importFileParser = async (event) => {
 
       // Parse the CSV file using csv-parser
       s3Stream.pipe(csv())
-        .on('data', (data) => {
-          // Log each record to CloudWatch
-          console.log('Record:', data);
+        .on('data', async (data) => {
+          // Send each record to SQS
+          try {
+            const params = {
+              QueueUrl: 'https://sqs.us-east-1.amazonaws.com/427059129602/catologItemsQueue', // Replace with your SQS queue URL
+              MessageBody: JSON.stringify(data),
+            };
+            await SQS.sendMessage(params).promise();
+          } catch (error) {
+            console.error('Failed to send message to SQS:', error);
+          }
         })
         .on('end', () => {
           console.log('CSV parsing finished.');
@@ -83,4 +92,5 @@ module.exports.importFileParser = async (event) => {
     };
   }
 };
+
 

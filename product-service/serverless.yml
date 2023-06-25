@@ -103,6 +103,22 @@ functions:
           path: /products
           method: post
 
+  catalogBatchProcess:
+    handler: handler.catalogBatchProcess
+    events:
+      - sqs:
+          arn: ${self:custom.sqsArn}
+
+custom:
+  sqsArn: arn:aws:sqs:us-east-1:427059129602:catologItemsQueue
+
+resources:
+  Resources:
+    CatalogBatchProcessQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: catalog-batch-process-queue
+
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
