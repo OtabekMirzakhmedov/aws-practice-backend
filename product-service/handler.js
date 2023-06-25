@@ -137,4 +137,53 @@ exports.createProduct = async (event, context) => {
   }
 };
 
+module.exports.catalogBatchProcess = async (event) => {
+  try {
+    const products = event.Records.map((record) => {
+      const { title, description, price } = JSON.parse(record.body);
+      const id = uuidv4();
+
+      return {
+        PutRequest: {
+          Item: {
+            id,
+            title,
+            description,
+            price,
+          },
+        },
+      };
+    });
+
+    const batchParams = {
+      RequestItems: {
+        products: products,
+      },
+    };
+
+    await dynamodb.batchWrite(batchParams).promise();
+
+    // Publish event to SNS topic
+    const sns = new AWS.SNS();
+    const snsParams = {
+      TopicArn: 'arn:aws:sns:us-east-1:427059129602:createProductTopic.fifo',
+      Subject: 'Products Created',
+      Message: `New products have been created.`,
+    };
+
+    await sns.publish(snsParams).promise();
+
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: 'Products created successfully' }),
+    };
+  } catch (error) {
+    console.error('Error:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: 'Internal server error' }),
+    };
+  }
+};
+
 
